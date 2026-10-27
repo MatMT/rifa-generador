@@ -1,0 +1,371 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Generador de listas de rifa</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Figtree:wght@400;500;600;700&display=swap">
+<style>
+  /* Diseño: panel de control fijo a la izquierda, mesa de trabajo a la derecha con las hojas carta a escala.
+     Paleta tomada de la propia lista impresa (azul tinta sobre papel). */
+  :root {
+    --bg: #eef1f6;
+    --panel: #ffffff;
+    --panel-2: #f5f7fb;
+    --line: #d9dfea;
+    --ink: #17233d;
+    --muted: #5d6a85;
+    --accent: #1f3864;
+    --accent-ink: #ffffff;
+    --accent-soft: #e4eefb;
+    --danger: #b3261e;
+    --ok: #1d7a46;
+    --desk: #d5dbe7;
+    --font-display: "Bricolage Grotesque", "Avenir Next", "Segoe UI", sans-serif;
+    --font-body: "Figtree", -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0f1522; --panel: #171f31; --panel-2: #1d2740; --line: #2b3652;
+      --ink: #e7ecf7; --muted: #94a1bf; --accent: #7fa6ee; --accent-ink: #0c1424; --accent-soft: #22304f;
+      --danger: #ff8a80; --ok: #6fd69b; --desk: #0b101b; color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0f1522; --panel: #171f31; --panel-2: #1d2740; --line: #2b3652;
+    --ink: #e7ecf7; --muted: #94a1bf; --accent: #7fa6ee; --accent-ink: #0c1424; --accent-soft: #22304f;
+    --danger: #ff8a80; --ok: #6fd69b; --desk: #0b101b; color-scheme: dark;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 14px; }
+
+  .app { display: grid; grid-template-columns: 410px minmax(0, 1fr); height: 100%; }
+
+  /* ---------------- Panel ---------------- */
+  aside { background: var(--panel); border-right: 1px solid var(--line); display: flex; flex-direction: column; min-height: 0; }
+  .marca { padding: 20px 22px 14px; border-bottom: 1px solid var(--line); }
+  .marca h1 { font-family: var(--font-display); font-weight: 800; font-size: 22px; letter-spacing: -.01em; margin: 0; color: var(--accent); text-wrap: balance; }
+  .marca p { margin: 4px 0 0; color: var(--muted); font-size: 13px; }
+
+  .scroll { flex: 1; overflow-y: auto; padding: 6px 22px 18px; }
+  section.grupo { padding: 16px 0; border-bottom: 1px solid var(--line); }
+  section.grupo:last-child { border-bottom: 0; }
+  h2 { font-size: 11px; text-transform: uppercase; letter-spacing: .09em; color: var(--muted); margin: 0 0 12px; font-weight: 700; }
+
+  .campo { display: flex; flex-direction: column; gap: 5px; margin-bottom: 12px; min-width: 0; }
+  .campo:last-child { margin-bottom: 0; }
+  label, .etq { font-size: 12.5px; font-weight: 600; color: var(--ink); }
+  .ayuda { font-size: 12px; color: var(--muted); font-weight: 400; }
+  input[type=text], input[type=date], input[type=number] {
+    font: inherit; font-size: 14px; color: var(--ink); background: var(--panel-2);
+    border: 1px solid var(--line); border-radius: 8px; padding: 9px 11px; width: 100%; min-width: 0;
+  }
+  input::placeholder { color: var(--muted); opacity: .8; }
+  input:focus-visible, button:focus-visible, select:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+
+  .dos { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+  /* Selector numérico con − y + */
+  .stepper { display: grid; grid-template-columns: 38px 1fr 38px; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; background: var(--panel-2); }
+  .stepper button { border: 0; background: transparent; color: var(--accent); font-size: 18px; font-weight: 600; cursor: pointer; padding: 0; }
+  .stepper button:hover { background: var(--accent-soft); }
+  .stepper input { border: 0; border-radius: 0; text-align: center; font-weight: 700; font-size: 16px; background: transparent; padding: 8px 0; -moz-appearance: textfield; appearance: textfield; }
+  .stepper input::-webkit-outer-spin-button, .stepper input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+
+  /* Interruptores */
+  .opcion { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 9px 0; cursor: pointer; }
+  .opcion + .opcion { border-top: 1px dashed var(--line); }
+  .opcion .tx { display: flex; flex-direction: column; gap: 1px; }
+  .opcion b { font-weight: 600; font-size: 13.5px; }
+  .opcion span.ayuda { line-height: 1.3; }
+  .sw { position: relative; flex: none; width: 40px; height: 23px; }
+  .sw input { position: absolute; inset: 0; opacity: 0; margin: 0; cursor: pointer; width: 100%; height: 100%; }
+  .sw i { position: absolute; inset: 0; background: var(--line); border-radius: 99px; transition: background .15s; }
+  .sw i::after { content: ""; position: absolute; top: 3px; left: 3px; width: 17px; height: 17px; border-radius: 50%; background: #fff; transition: transform .15s; box-shadow: 0 1px 2px rgba(0,0,0,.3); }
+  .sw input:checked + i { background: var(--accent); }
+  .sw input:checked + i::after { transform: translateX(17px); }
+  .sw input:focus-visible + i { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  /* Presets */
+  .guardar { display: flex; gap: 8px; }
+  .guardar input { flex: 1; }
+  .btn { font: inherit; font-weight: 600; font-size: 13.5px; padding: 9px 14px; border-radius: 8px; border: 1px solid var(--line); background: var(--panel); color: var(--ink); cursor: pointer; white-space: nowrap; }
+  .btn:hover { background: var(--accent-soft); }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+  .chip { display: inline-flex; align-items: stretch; border: 1px solid var(--line); border-radius: 99px; overflow: hidden; background: var(--panel-2); }
+  .chip button { font: inherit; border: 0; background: transparent; color: var(--ink); cursor: pointer; }
+  .chip .cargar { padding: 6px 6px 6px 13px; font-weight: 600; font-size: 13px; }
+  .chip .quitar { padding: 6px 11px 6px 7px; color: var(--muted); font-size: 15px; line-height: 1; }
+  .chip .cargar:hover { color: var(--accent); }
+  .chip .quitar:hover { color: var(--danger); }
+  .chip.activo { border-color: var(--accent); background: var(--accent-soft); }
+  .vacio { margin-top: 10px; color: var(--muted); font-size: 12.5px; }
+
+  /* Pie con resumen e imprimir */
+  .pie { border-top: 1px solid var(--line); padding: 14px 22px 18px; background: var(--panel); display: flex; flex-direction: column; gap: 12px; }
+  .resumen { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .resumen div { background: var(--panel-2); border-radius: 8px; padding: 8px 10px; min-width: 0; }
+  .resumen strong { display: block; font-family: var(--font-display); font-size: 20px; font-variant-numeric: tabular-nums; color: var(--accent); line-height: 1.1; }
+  .resumen span { font-size: 11.5px; color: var(--muted); }
+  .imprimir { font: inherit; font-weight: 700; font-size: 15px; border: 0; border-radius: 10px; padding: 13px; background: var(--accent); color: var(--accent-ink); cursor: pointer; display: flex; justify-content: center; gap: 9px; align-items: center; }
+  .imprimir:hover { filter: brightness(1.1); }
+  .imprimir svg { width: 18px; height: 18px; }
+  .tip { font-size: 12px; color: var(--muted); margin: 0; line-height: 1.4; }
+
+  /* ---------------- Mesa de trabajo ---------------- */
+  main { background: var(--desk); overflow: auto; min-width: 0; padding: 22px 28px 60px; }
+  #hojas { display: flex; flex-direction: column; align-items: center; gap: 26px; }
+  .hoja { display: flex; flex-direction: column; gap: 8px; align-items: center; }
+  .etiqueta { font-size: 12px; font-weight: 600; color: var(--muted); letter-spacing: .02em; }
+  .pagina { zoom: var(--z, 1); width: 8.5in; height: 11in; background: #fff; color: #1a1a1a; padding: 0.4in; box-shadow: 0 3px 14px rgba(10,20,40,.28); display: flex; flex-direction: column; flex: none; }
+
+  /* ---------------- Hoja impresa (no usa tokens: siempre papel blanco) ---------------- */
+  .lista { height: 5.1in; display: flex; flex-direction: column; padding: 0.05in 0.05in 0.08in; font-family: Helvetica, Arial, sans-serif; }
+  .lista + .lista { border-top: 1.5px dashed #888; padding-top: 0.12in; }
+  .lista.vacia { visibility: hidden; }
+  /* Encabezado en dos columnas: texto a la izquierda, valor y número de lista a la derecha */
+  .cab { display: grid; grid-template-columns: minmax(0, 1fr) 2.1in; gap: 0.18in; align-items: stretch; padding-bottom: 5px; border-bottom: 1.5px solid #1f3864; margin-bottom: 5px; }
+  .cab-izq { display: flex; flex-direction: column; justify-content: center; gap: 2px; }
+  .titulo { font-size: 17pt; font-weight: 800; margin: 0; line-height: 1.08; }
+  .benef { font-size: 11.5pt; font-weight: 700; color: #2f5597; }
+  .fecha { font-size: 10.5pt; line-height: 1.25; }
+  .cab-der { display: flex; flex-direction: column; justify-content: space-between; align-items: flex-end; text-align: right; border-left: 1.5px solid #1f3864; padding-left: 0.14in; }
+  .precio-et { font-size: 8.5pt; font-weight: 700; letter-spacing: .05em; color: #1f3864; }
+  .precio { font-size: 22pt; font-weight: 800; color: #1f3864; line-height: 1; }
+  .numlista { font-size: 15pt; font-weight: 800; white-space: nowrap; }
+  .numlista .raya { display: inline-block; width: 0.7in; border-bottom: 1.5px solid #000; }
+  .tabla { flex: 1; min-height: 0; display: grid; grid-template-columns: 0.55in 1fr 1.9in; border: 1.5px solid #1f3864; }
+  .tabla > div { border-right: 1px solid #1f3864; border-bottom: 1px solid #1f3864; padding: 0 8px; display: flex; align-items: center; font-size: 15pt; font-weight: 700; }
+  .tabla > div:nth-child(3n) { border-right: 0; }
+  .tabla > div:nth-last-child(-n+3) { border-bottom: 0; }
+  .tabla .th { background: #e4eefb; font-size: 11pt; padding-top: 3px; padding-bottom: 3px; }
+  .tabla .n { justify-content: center; padding: 0; }
+  .vendida { font-size: 12.5pt; font-weight: 700; margin-top: 6px; display: flex; align-items: flex-end; gap: 6px; }
+  .vendida span { flex: 0 0 3.6in; border-bottom: 1.5px solid #000; height: 1em; }
+
+  /* Aviso */
+  .toast { position: fixed; left: 50%; bottom: 24px; transform: translate(-50%, 20px); background: var(--ink); color: var(--bg); padding: 10px 16px; border-radius: 99px; font-weight: 600; font-size: 13px; opacity: 0; pointer-events: none; transition: .2s; z-index: 50; }
+  .toast.ver { opacity: 1; transform: translate(-50%, 0); }
+
+  /* ---------------- Pantallas angostas ---------------- */
+  @media (max-width: 900px) {
+    html, body { height: auto; }
+    .app { display: block; height: auto; }
+    aside { border-right: 0; }
+    .scroll { overflow: visible; }
+    main { padding: 18px 10px 60px; }
+  }
+
+  /* ---------------- Impresión ---------------- */
+  @page { size: letter; margin: 0; }
+  @media print {
+    html, body { height: auto; background: #fff; }
+    aside, .etiqueta, .toast { display: none !important; }
+    .app { display: block; }
+    main { background: #fff; padding: 0; overflow: visible; }
+    #hojas { display: block; }
+    .hoja { display: block; page-break-after: always; break-after: page; }
+    .hoja:last-child { page-break-after: auto; break-after: auto; }
+    .pagina { zoom: 1 !important; box-shadow: none; margin: 0; }
+    * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <aside>
+    <div class="marca">
+      <h1>Listas de rifa</h1>
+      <p>Dos listas por hoja carta, listas para cortar.</p>
+    </div>
+
+    <div class="scroll">
+      <section class="grupo">
+        <h2>Cuántas listas</h2>
+        <div class="dos">
+          <div class="campo">
+            <label for="desde">Desde la lista</label>
+            <div class="stepper"><button type="button" data-paso="desde:-1" aria-label="Restar">−</button><input type="number" id="desde" min="1" value="1"><button type="button" data-paso="desde:1" aria-label="Sumar">+</button></div>
+          </div>
+          <div class="campo">
+            <label for="hasta">Hasta la lista</label>
+            <div class="stepper"><button type="button" data-paso="hasta:-1" aria-label="Restar">−</button><input type="number" id="hasta" min="1" value="10"><button type="button" data-paso="hasta:1" aria-label="Sumar">+</button></div>
+          </div>
+        </div>
+        <div class="campo">
+          <label for="filas">Números por lista</label>
+          <div class="stepper"><button type="button" data-paso="filas:-1" aria-label="Restar">−</button><input type="number" id="filas" min="1" max="20" value="10"><button type="button" data-paso="filas:1" aria-label="Sumar">+</button></div>
+          <span class="ayuda">Menos números dan filas más altas para escribir.</span>
+        </div>
+      </section>
+
+      <section class="grupo">
+        <h2>Texto de la rifa</h2>
+        <div class="campo"><label for="titulo">Título</label><input type="text" id="titulo" value="GRAN RIFA DE UNA CANASTA DE VÍVERES"></div>
+        <div class="campo"><label for="valor">Valor del número</label><input type="text" id="valor" value="$0.50"></div>
+        <div class="campo"><label for="benef">A beneficio de</label><input type="text" id="benef" value="A beneficio de la P.C. San Miguel Arcángel"></div>
+      </section>
+
+      <section class="grupo">
+        <h2>Fecha y evento</h2>
+        <div class="campo"><label for="fecha">Fecha del sorteo</label><input type="date" id="fecha" value="2026-11-20"></div>
+        <div class="campo"><label for="fechaTxt">Texto de fecha propio</label><input type="text" id="fechaTxt" placeholder="Ej: Sábado 20 de noviembre"><span class="ayuda">Si lo llenas, se usa en lugar de la fecha.</span></div>
+        <div class="campo"><label for="evento">Evento o lugar</label><input type="text" id="evento" value="Asamblea de P.C. San Miguel Arcángel"></div>
+      </section>
+
+      <section class="grupo">
+        <h2>Opciones</h2>
+        <label class="opcion" for="numerar"><span class="tx"><b>Lista ya numerada</b><span class="ayuda">Apagado deja una raya para escribir el número.</span></span><span class="sw"><input type="checkbox" id="numerar" checked><i></i></span></label>
+        <label class="opcion" for="vendida"><span class="tx"><b>Línea "Vendida por"</b><span class="ayuda">Para anotar quién vendió la lista.</span></span><span class="sw"><input type="checkbox" id="vendida" checked><i></i></span></label>
+        <label class="opcion" for="continuar"><span class="tx"><b>Boletos seguidos</b><span class="ayuda">La lista 2 lleva del 11 al 20, y así.</span></span><span class="sw"><input type="checkbox" id="continuar"><i></i></span></label>
+      </section>
+
+      <section class="grupo">
+        <h2>Presets</h2>
+        <div class="guardar">
+          <input type="text" id="nombrePreset" placeholder="Nombre, ej: Rifa noviembre" aria-label="Nombre del preset">
+          <button type="button" class="btn" id="guardar">Guardar</button>
+        </div>
+        <div class="chips" id="chips"></div>
+        <div class="vacio" id="sinPresets">Aún no hay presets. Guarda la configuración actual para reutilizarla.</div>
+      </section>
+    </div>
+
+    <div class="pie">
+      <div class="resumen">
+        <div><strong id="rListas">0</strong><span>listas</span></div>
+        <div><strong id="rHojas">0</strong><span>hojas</span></div>
+        <div><strong id="rRecaudo">–</strong><span>si se vende todo</span></div>
+      </div>
+      <button type="button" class="imprimir" id="imprimir">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V3h12v6"/><rect x="3" y="9" width="18" height="9" rx="2"/><path d="M7 14h10v7H7z"/></svg>
+        Imprimir o guardar PDF
+      </button>
+      <p class="tip">En el diálogo elige tamaño Carta, escala 100 % y desactiva encabezados y pies de página.</p>
+    </div>
+  </aside>
+
+  <main id="mesa"><div id="hojas"></div></main>
+</div>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+const CAMPOS = ['desde','hasta','filas','titulo','valor','benef','fecha','fechaTxt','evento'];
+const CHECKS = ['numerar','vendida','continuar'];
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const KEY = 'rifa-presets-v1';
+let presetActivo = '';
+
+function textoFecha() {
+  if ($('fechaTxt').value.trim()) return $('fechaTxt').value.trim();
+  if (!$('fecha').value) return '';
+  const [y, m, d] = $('fecha').value.split('-').map(Number);
+  const meses = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+  return `${d} de ${meses[m-1]}`;
+}
+function lineaFecha() {
+  const f = textoFecha(), e = $('evento').value.trim(), p = [];
+  if (f) p.push(`Se realizará el <b>${esc(f)}</b>`);
+  if (e) p.push(esc(e));
+  return p.join(' · ');
+}
+const nFilas = () => Math.max(1, Math.min(20, +$('filas').value || 10));
+
+function listaHTML(num) {
+  const filas = nFilas(), lineaF = lineaFecha();
+  const base = $('continuar').checked ? (num - (+$('desde').value || 1)) * filas : 0;
+  let celdas = '<div class="th n">No.</div><div class="th">Nombre del Comprador</div><div class="th">Teléfono</div>';
+  for (let i = 1; i <= filas; i++) celdas += `<div class="n">${base + i}</div><div></div><div></div>`;
+  return `
+  <section class="lista">
+    <div class="cab">
+      <div class="cab-izq">
+        <h1 class="titulo">${esc($('titulo').value)}</h1>
+        <div class="benef">${esc($('benef').value)}</div>
+        ${lineaF ? `<div class="fecha">${lineaF}</div>` : ''}
+      </div>
+      <div class="cab-der">
+        <div><div class="precio-et">VALOR DEL NÚMERO</div><div class="precio">${esc($('valor').value)}</div></div>
+        <div class="numlista">Lista No. ${$('numerar').checked ? num : '<span class="raya"></span>'}</div>
+      </div>
+    </div>
+    <div class="tabla" style="grid-template-rows: auto repeat(${filas}, 1fr)">${celdas}</div>
+    ${$('vendida').checked ? '<div class="vendida">Vendida por: <span></span></div>' : ''}
+  </section>`;
+}
+
+function escalar() {
+  const disp = $('mesa').clientWidth - (innerWidth <= 900 ? 20 : 56);
+  $('hojas').style.setProperty('--z', Math.min(1, Math.max(0.3, disp / (8.5 * 96))).toFixed(3));
+}
+
+function render() {
+  const d = Math.max(1, +$('desde').value || 1);
+  let h = Math.max(d, +$('hasta').value || d);
+  if (h - d > 300) h = d + 300;
+  const nums = []; for (let n = d; n <= h; n++) nums.push(n);
+  let html = '', hoja = 0;
+  for (let i = 0; i < nums.length; i += 2) {
+    hoja++;
+    const rotulo = nums[i+1] ? `Listas ${nums[i]} y ${nums[i+1]}` : `Lista ${nums[i]}`;
+    html += `<div class="hoja"><div class="etiqueta">Hoja ${hoja} · ${rotulo}</div><div class="pagina">${listaHTML(nums[i])}${nums[i+1] ? listaHTML(nums[i+1]) : '<section class="lista vacia"></section>'}</div></div>`;
+  }
+  $('hojas').innerHTML = html;
+  escalar();
+  $('rListas').textContent = nums.length;
+  $('rHojas').textContent = Math.ceil(nums.length / 2);
+  const precio = parseFloat(String($('valor').value).replace(',', '.').replace(/[^0-9.]/g, ''));
+  $('rRecaudo').textContent = isFinite(precio) ? '$' + (precio * nums.length * nFilas()).toLocaleString('es', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '–';
+}
+
+/* ---------- Presets (se guardan en este navegador) ---------- */
+function leerPresets() { try { return JSON.parse(localStorage.getItem(KEY)) || {}; } catch { return {}; } }
+function escribirPresets(p) { try { localStorage.setItem(KEY, JSON.stringify(p)); return true; } catch { aviso('No se pudo guardar en este navegador'); return false; } }
+function estado() { const o = {}; CAMPOS.forEach(c => o[c] = $(c).value); CHECKS.forEach(c => o[c] = $(c).checked); return o; }
+function aplicar(o) { CAMPOS.forEach(c => { if (c in o) $(c).value = o[c]; }); CHECKS.forEach(c => { if (c in o) $(c).checked = o[c]; }); render(); }
+function dibujarPresets() {
+  const nombres = Object.keys(leerPresets());
+  $('sinPresets').hidden = nombres.length > 0;
+  $('chips').innerHTML = nombres.map(n =>
+    `<span class="chip${n === presetActivo ? ' activo' : ''}"><button type="button" class="cargar" data-cargar="${esc(n)}">${esc(n)}</button><button type="button" class="quitar" data-quitar="${esc(n)}" aria-label="Borrar ${esc(n)}">×</button></span>`).join('');
+}
+let tt;
+function aviso(t) { const e = $('toast'); e.textContent = t; e.classList.add('ver'); clearTimeout(tt); tt = setTimeout(() => e.classList.remove('ver'), 1800); }
+
+$('guardar').onclick = () => {
+  const n = $('nombrePreset').value.trim();
+  if (!n) { aviso('Escribe un nombre para el preset'); $('nombrePreset').focus(); return; }
+  const p = leerPresets(); p[n] = estado();
+  if (escribirPresets(p)) { presetActivo = n; $('nombrePreset').value = ''; dibujarPresets(); aviso(`Preset "${n}" guardado`); }
+};
+$('nombrePreset').addEventListener('keydown', e => { if (e.key === 'Enter') $('guardar').click(); });
+$('chips').addEventListener('click', e => {
+  const c = e.target.closest('[data-cargar]'), q = e.target.closest('[data-quitar]');
+  if (c) { presetActivo = c.dataset.cargar; aplicar(leerPresets()[presetActivo]); dibujarPresets(); aviso(`Preset "${presetActivo}" cargado`); }
+  if (q) {
+    const n = q.dataset.quitar;
+    // Confirmación en el mismo botón: un segundo clic borra
+    if (q.dataset.seguro) { const p = leerPresets(); delete p[n]; escribirPresets(p); if (presetActivo === n) presetActivo = ''; dibujarPresets(); aviso(`Preset "${n}" borrado`); }
+    else { q.dataset.seguro = '1'; q.textContent = 'borrar'; q.style.color = 'var(--danger)'; q.style.fontSize = '12px'; setTimeout(dibujarPresets, 2500); }
+  }
+});
+
+/* ---------- Controles ---------- */
+document.querySelectorAll('[data-paso]').forEach(b => b.onclick = () => {
+  const [id, paso] = b.dataset.paso.split(':'), el = $(id);
+  const min = +el.min || 1, max = el.max ? +el.max : 9999;
+  el.value = Math.min(max, Math.max(min, (+el.value || min) + +paso));
+  if (id === 'desde' && +$('hasta').value < +el.value) $('hasta').value = el.value;
+  render();
+});
+[...CAMPOS, ...CHECKS].forEach(c => $(c).addEventListener('input', render));
+$('imprimir').onclick = () => window.print();
+addEventListener('resize', escalar);
+dibujarPresets(); render();
+</script>
+</body>
+</html>
