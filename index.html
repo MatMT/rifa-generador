@@ -22,6 +22,7 @@
     --danger: #b3261e;
     --ok: #1d7a46;
     --desk: #d5dbe7;
+    --warn-bg: #fff3d6; --warn-fg: #7a5200; --ok-bg: #dff3e7; --bad-bg: #fde4e1;
     --font-display: "Bricolage Grotesque", "Avenir Next", "Segoe UI", sans-serif;
     --font-body: "Figtree", -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
   }
@@ -30,19 +31,22 @@
       --bg: #0f1522; --panel: #171f31; --panel-2: #1d2740; --line: #2b3652;
       --ink: #e7ecf7; --muted: #94a1bf; --accent: #7fa6ee; --accent-ink: #0c1424; --accent-soft: #22304f;
       --danger: #ff8a80; --ok: #6fd69b; --desk: #0b101b; color-scheme: dark;
+      --warn-bg: #3a2f12; --warn-fg: #f2c66b; --ok-bg: #17301f; --bad-bg: #3a1a18;
     }
   }
   :root[data-theme="dark"] {
     --bg: #0f1522; --panel: #171f31; --panel-2: #1d2740; --line: #2b3652;
     --ink: #e7ecf7; --muted: #94a1bf; --accent: #7fa6ee; --accent-ink: #0c1424; --accent-soft: #22304f;
     --danger: #ff8a80; --ok: #6fd69b; --desk: #0b101b; color-scheme: dark;
+    --warn-bg: #3a2f12; --warn-fg: #f2c66b; --ok-bg: #17301f; --bad-bg: #3a1a18;
   }
 
   * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
   html, body { height: 100%; }
-  body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 14px; }
+  body { display: flex; flex-direction: column; margin: 0; background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 14px; }
 
-  .app { display: grid; grid-template-columns: 410px minmax(0, 1fr); height: 100%; }
+  .app { display: grid; grid-template-columns: 410px minmax(0, 1fr); flex: 1; min-height: 0; }
 
   /* ---------------- Panel ---------------- */
   aside { background: var(--panel); border-right: 1px solid var(--line); display: flex; flex-direction: column; min-height: 0; }
@@ -59,7 +63,7 @@
   .campo:last-child { margin-bottom: 0; }
   label, .etq { font-size: 12.5px; font-weight: 600; color: var(--ink); }
   .ayuda { font-size: 12px; color: var(--muted); font-weight: 400; }
-  input[type=text], input[type=date], input[type=number] {
+  input[type=text], input[type=date], input[type=number], input[type=search], input[type=password] {
     font: inherit; font-size: 14px; color: var(--ink); background: var(--panel-2);
     border: 1px solid var(--line); border-radius: 8px; padding: 9px 11px; width: 100%; min-width: 0;
   }
@@ -146,6 +150,107 @@
   .vendida { font-size: 12.5pt; font-weight: 700; margin-top: 6px; display: flex; align-items: flex-end; gap: 6px; }
   .vendida span { flex: 0 0 3.6in; border-bottom: 1.5px solid #000; height: 1em; }
 
+  /* ---------------- Barra superior y pestañas ---------------- */
+  .top { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 0 18px; background: var(--panel); border-bottom: 1px solid var(--line); flex: none; }
+  .tabs { display: flex; gap: 4px; }
+  .tab { font: inherit; font-weight: 600; font-size: 14px; color: var(--muted); background: transparent; border: 0; border-bottom: 3px solid transparent; padding: 14px 14px 11px; cursor: pointer; }
+  .tab:hover { color: var(--ink); }
+  .tab[aria-current="page"] { color: var(--accent); border-bottom-color: var(--accent); }
+  .conn { display: inline-flex; align-items: center; gap: 8px; font: inherit; font-size: 12.5px; font-weight: 600; color: var(--ink); background: var(--panel-2); border: 1px solid var(--line); border-radius: 99px; padding: 6px 12px; cursor: pointer; max-width: 50vw; }
+  .conn span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .conn:hover { background: var(--accent-soft); }
+  .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--warn-fg); flex: none; }
+  .conn.sb .dot { background: var(--ok); }
+  .conn.err .dot { background: var(--danger); }
+
+  .btn.pri { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+  .btn.pri:hover { filter: brightness(1.1); background: var(--accent); }
+  .btn.peligro { color: var(--danger); border-color: var(--danger); background: transparent; }
+  .btn.peligro:hover { background: var(--bad-bg); }
+
+  /* ---------------- Reparto ---------------- */
+  .reparto { flex: 1; min-height: 0; overflow: auto; padding: 26px 28px 70px; }
+  .rcont { max-width: 1120px; margin: 0 auto; display: flex; flex-direction: column; gap: 18px; }
+  .rhead { display: flex; justify-content: space-between; align-items: flex-end; gap: 14px; flex-wrap: wrap; }
+  .rtit { font-family: var(--font-display); font-weight: 800; font-size: 26px; letter-spacing: -.01em; text-transform: none; margin: 0; color: var(--accent); }
+  .rsub { margin: 3px 0 0; color: var(--muted); font-size: 13px; }
+  .racc { display: flex; gap: 8px; flex-wrap: wrap; }
+
+  .aviso-local { background: var(--warn-bg); color: var(--warn-fg); border-radius: 10px; padding: 10px 14px; font-size: 13px; line-height: 1.45; display: flex; gap: 12px; align-items: center; justify-content: space-between; flex-wrap: wrap; }
+  .aviso-local button { font: inherit; font-weight: 700; font-size: 13px; color: inherit; background: transparent; border: 1.5px solid currentColor; border-radius: 8px; padding: 5px 11px; cursor: pointer; }
+  .puerta { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 36px 24px; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 10px; }
+  .puerta h2 { font-family: var(--font-display); font-size: 22px; color: var(--ink); margin: 0; text-transform: none; letter-spacing: 0; }
+  .puerta p { margin: 0 0 6px; color: var(--muted); max-width: 46ch; }
+
+  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; }
+  .st { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+  .st span { font-size: 12px; font-weight: 600; color: var(--muted); }
+  .st strong { font-family: var(--font-display); font-size: 26px; font-weight: 800; font-variant-numeric: tabular-nums; line-height: 1.15; }
+  .st small { font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .st.k-con strong { color: var(--warn-fg); } .st.k-ok strong { color: var(--ok); }
+  .st.k-debe strong, .st.k-perdida strong { color: var(--danger); }
+
+  .barra { display: flex; flex-wrap: wrap; gap: 10px 14px; align-items: center; }
+  .seg { display: inline-flex; background: var(--panel-2); border: 1px solid var(--line); border-radius: 9px; padding: 3px; }
+  .seg button { font: inherit; font-size: 13px; font-weight: 600; color: var(--muted); background: transparent; border: 0; border-radius: 7px; padding: 6px 13px; cursor: pointer; }
+  .seg button[aria-pressed="true"] { background: var(--panel); color: var(--accent); box-shadow: 0 1px 3px rgba(10,20,40,.18); }
+  .filtros { display: flex; gap: 6px; flex-wrap: wrap; flex: 1; min-width: 0; }
+  .fl { font: inherit; font-size: 12.5px; font-weight: 600; color: var(--ink); background: var(--panel); border: 1px solid var(--line); border-radius: 99px; padding: 5px 11px; cursor: pointer; font-variant-numeric: tabular-nums; }
+  .fl b { color: var(--muted); font-weight: 600; margin-left: 4px; }
+  .fl[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+  .fl[aria-pressed="true"] b { color: inherit; opacity: .8; }
+  #buscar { width: 230px; }
+
+  .tbl { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+  .rw { display: grid; gap: 12px; align-items: center; padding: 10px 16px; border-top: 1px solid var(--line); }
+  .rw.cab-t { border-top: 0; background: var(--panel-2); font-size: 11.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; color: var(--muted); padding-top: 9px; padding-bottom: 9px; }
+  .tbl.por-lista .rw { grid-template-columns: 56px minmax(0, 1.5fr) 170px 86px minmax(0, 1.1fr) 96px; }
+  .tbl.por-persona .rw { grid-template-columns: minmax(0, 1.2fr) minmax(0, 1.4fr) 86px minmax(0, 1.1fr) 120px; }
+  .rw.dato { cursor: pointer; }
+  .rw.dato:hover { background: var(--accent-soft); }
+  .rw.dato:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+  .rw b { font-weight: 700; }
+  .rw small { display: block; color: var(--muted); font-size: 12px; font-weight: 400; margin-top: 1px; }
+  .c-n { font-family: var(--font-display); font-weight: 800; font-size: 20px; font-variant-numeric: tabular-nums; }
+  .c-v, .c-d { font-variant-numeric: tabular-nums; }
+  .c-m { overflow-wrap: anywhere; }
+  .debe-t { color: var(--danger); font-weight: 700; }
+  .pill { display: inline-block; font-size: 12px; font-weight: 700; padding: 3px 10px; border-radius: 99px; white-space: nowrap; }
+  .k-libre { background: var(--panel-2); color: var(--muted); border: 1px solid var(--line); }
+  .k-con { background: var(--warn-bg); color: var(--warn-fg); }
+  .k-debe, .k-perdida { background: var(--bad-bg); color: var(--danger); }
+  .k-ok { background: var(--ok-bg); color: var(--ok); }
+  .tg { font: inherit; font-size: 12.5px; font-weight: 700; border-radius: 8px; padding: 5px 9px; cursor: pointer; border: 1px solid var(--line); background: var(--panel); color: var(--muted); }
+  .tg[aria-pressed="true"] { background: var(--ok-bg); color: var(--ok); border-color: transparent; }
+  .tg:disabled { opacity: .4; cursor: default; }
+  .vacia-t { padding: 34px 20px; text-align: center; color: var(--muted); }
+
+  /* Cuadros de diálogo */
+  dialog { border: 1px solid var(--line); border-radius: 14px; padding: 0; background: var(--panel); color: var(--ink); width: min(520px, calc(100vw - 32px)); max-height: calc(100vh - 32px); }
+  dialog::backdrop { background: rgba(8, 14, 28, .55); }
+  .dlg { padding: 22px; display: flex; flex-direction: column; gap: 14px; }
+  .dlg h3 { margin: 0; font-family: var(--font-display); font-size: 21px; color: var(--accent); }
+  .dlg .campo, .dlg .opcion { margin: 0; }
+  .acciones { display: flex; gap: 8px; justify-content: flex-end; flex-wrap: wrap; margin-top: 4px; }
+  .acciones .esp { flex: 1; }
+  .err { margin: 0; color: var(--danger); background: var(--bad-bg); border-radius: 8px; padding: 8px 11px; font-size: 13px; }
+  .monto { display: flex; gap: 8px; }
+  .bloque { display: flex; flex-direction: column; gap: 12px; padding-top: 4px; }
+  .bloque + .bloque { border-top: 1px solid var(--line); padding-top: 14px; }
+
+  @media (max-width: 900px) {
+    .reparto { padding: 18px 12px 60px; }
+    .tbl.por-lista .rw, .tbl.por-persona .rw { grid-template-columns: 48px minmax(0, 1fr) auto; row-gap: 6px; }
+    .rw.cab-t { display: none; }
+    .tbl.por-lista .c-e { grid-column: 3; grid-row: 1; justify-self: end; }
+    .tbl.por-lista .c-v, .tbl.por-lista .c-d, .tbl.por-lista .c-r { grid-column: 2 / 4; }
+    .tbl.por-lista .c-v { display: inline; }
+    .tbl.por-persona .rw > * { grid-column: 1 / -1; }
+    #buscar { width: 100%; }
+    .top { padding: 0 8px; }
+    .tab { padding-left: 8px; padding-right: 8px; font-size: 13px; }
+  }
+
   /* Aviso */
   .toast { position: fixed; left: 50%; bottom: 24px; transform: translate(-50%, 20px); background: var(--ink); color: var(--bg); padding: 10px 16px; border-radius: 99px; font-weight: 600; font-size: 13px; opacity: 0; pointer-events: none; transition: .2s; z-index: 50; }
   .toast.ver { opacity: 1; transform: translate(-50%, 0); }
@@ -153,7 +258,8 @@
   /* ---------------- Pantallas angostas ---------------- */
   @media (max-width: 900px) {
     html, body { height: auto; }
-    .app { display: block; height: auto; }
+    body { display: block; }
+    .app { display: block; }
     aside { border-right: 0; }
     .scroll { overflow: visible; }
     main { padding: 18px 10px 60px; }
@@ -163,7 +269,8 @@
   @page { size: letter; margin: 0; }
   @media print {
     html, body { height: auto; background: #fff; }
-    aside, .etiqueta, .toast { display: none !important; }
+    aside, .etiqueta, .toast, .top, .reparto, dialog { display: none !important; }
+    body { display: block; }
     .app { display: block; }
     main { background: #fff; padding: 0; overflow: visible; }
     #hojas { display: block; }
@@ -175,7 +282,14 @@
 </style>
 </head>
 <body>
-<div class="app">
+<header class="top">
+  <nav class="tabs" aria-label="Secciones">
+    <button type="button" class="tab" data-vista="imprimir" aria-current="page">Imprimir listas</button>
+    <button type="button" class="tab" data-vista="reparto">Reparto y control</button>
+  </nav>
+  <button type="button" class="conn" id="conn" title="Conexión de datos"><i class="dot"></i><span id="connTxt">Solo este navegador</span></button>
+</header>
+<div class="app" id="vImprimir">
   <aside>
     <div class="marca">
       <h1>Listas de rifa</h1>
@@ -250,8 +364,126 @@
 
   <main id="mesa"><div id="hojas"></div></main>
 </div>
+<div id="vReparto" class="reparto" hidden>
+  <div class="rcont">
+    <div class="aviso-local" id="avisoLocal" hidden>
+      <span>Modo local: los datos viven solo en este navegador. Conecta Supabase para que varios organizadores compartan el mismo control.</span>
+      <button type="button" id="avisoBtn">Conectar</button>
+    </div>
+
+    <div class="puerta" id="puerta" hidden>
+      <h2 id="puertaTit">Inicia sesión para ver el reparto</h2>
+      <p id="puertaTxt"></p>
+      <button type="button" class="btn pri" id="puertaBtn">Abrir conexión</button>
+    </div>
+
+    <div id="contenido" style="display:contents">
+      <div class="rhead">
+        <div><h2 class="rtit">Reparto de listas</h2><p class="rsub" id="rsub"></p></div>
+        <div class="racc">
+          <button type="button" class="btn" id="bRango">Registrar listas impresas</button>
+          <button type="button" class="btn" id="bCsv">Exportar CSV</button>
+          <button type="button" class="btn pri" id="bEntregar">Entregar listas</button>
+        </div>
+      </div>
+
+      <div class="stats" id="stats"></div>
+
+      <div class="barra">
+        <div class="seg" role="group" aria-label="Vista">
+          <button type="button" data-modo="lista" aria-pressed="true">Por lista</button>
+          <button type="button" data-modo="persona" aria-pressed="false">Por persona</button>
+        </div>
+        <div class="filtros" id="filtros"></div>
+        <input type="search" id="buscar" placeholder="Buscar número o persona" aria-label="Buscar">
+      </div>
+
+      <div class="tbl por-lista" id="tbl"></div>
+    </div>
+  </div>
+</div>
+
+<datalist id="dlPersonas"></datalist>
+
+<dialog id="dlgEntregar">
+  <form class="dlg" id="fEntregar" autocomplete="off">
+    <h3>Entregar listas</h3>
+    <div class="campo"><label for="dNombre">Quién las recibe</label><input type="text" id="dNombre" list="dlPersonas" placeholder="Nombre"></div>
+    <div class="campo"><label for="dTel">Teléfono</label><input type="text" id="dTel" inputmode="tel" placeholder="Opcional"></div>
+    <div class="campo"><label for="dListas">Listas</label><input type="text" id="dListas" placeholder="Ej: 1-10 o 4, 7, 12-15"><span class="ayuda" id="dAyuda">Escribe números o rangos separados por coma.</span></div>
+    <div class="campo"><label for="dFecha">Fecha de entrega</label><input type="date" id="dFecha"></div>
+    <p class="err" id="dErr" hidden></p>
+    <div class="acciones"><button type="button" class="btn" data-cerrar>Cancelar</button><button type="submit" class="btn pri">Entregar</button></div>
+  </form>
+</dialog>
+
+<dialog id="dlgEditar">
+  <form class="dlg" id="fEditar" autocomplete="off">
+    <h3 id="eTit">Lista</h3>
+    <div class="campo"><label for="ePersona">Persona que la tiene</label><input type="text" id="ePersona" list="dlPersonas" placeholder="Vacío = sin entregar"></div>
+    <div class="dos">
+      <div class="campo"><label for="eFecha">Fecha de entrega</label><input type="date" id="eFecha"></div>
+      <div class="campo"><label for="eVendidos">Números vendidos</label>
+        <div class="stepper"><button type="button" data-paso="eVendidos:-1" aria-label="Restar">−</button><input type="number" id="eVendidos" min="0" value="0"><button type="button" data-paso="eVendidos:1" aria-label="Sumar">+</button></div>
+      </div>
+    </div>
+    <div class="campo"><label for="eMonto">Dinero entregado</label>
+      <div class="monto"><input type="number" id="eMonto" min="0" step="0.05" value="0"><button type="button" class="btn" id="eCobrar">Todo lo vendido</button></div>
+      <span class="ayuda" id="eEsp"></span>
+    </div>
+    <label class="opcion" for="eDevuelta"><span class="tx"><b>Lista devuelta</b><span class="ayuda">La persona ya regresó la hoja.</span></span><span class="sw"><input type="checkbox" id="eDevuelta"><i></i></span></label>
+    <label class="opcion" for="ePerdida"><span class="tx"><b>Lista perdida</b><span class="ayuda">Se extravió y no se puede recuperar.</span></span><span class="sw"><input type="checkbox" id="ePerdida"><i></i></span></label>
+    <div class="campo"><label for="eNotas">Notas</label><input type="text" id="eNotas" placeholder="Opcional"></div>
+    <p class="err" id="eErr" hidden></p>
+    <div class="acciones">
+      <button type="button" class="btn peligro" id="eLiberar">Liberar lista</button><span class="esp"></span>
+      <button type="button" class="btn" data-cerrar>Cancelar</button><button type="submit" class="btn pri">Guardar</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="dlgPersona">
+  <form class="dlg" id="fPersona" autocomplete="off">
+    <h3>Editar persona</h3>
+    <div class="campo"><label for="pNombre">Nombre</label><input type="text" id="pNombre"></div>
+    <div class="campo"><label for="pTel">Teléfono</label><input type="text" id="pTel" inputmode="tel"></div>
+    <p class="err" id="pErr" hidden></p>
+    <div class="acciones">
+      <button type="button" class="btn peligro" id="pBorrar">Eliminar persona</button><span class="esp"></span>
+      <button type="button" class="btn" data-cerrar>Cancelar</button><button type="submit" class="btn pri">Guardar</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="dlgConn">
+  <div class="dlg">
+    <h3>Conexión de datos</h3>
+    <p class="ayuda" id="cEstado"></p>
+    <div class="bloque" id="cCfg">
+      <div class="campo"><label for="cUrl">URL del proyecto Supabase</label><input type="text" id="cUrl" placeholder="https://xxxx.supabase.co" autocomplete="off"></div>
+      <div class="campo"><label for="cKey">Clave anon (pública)</label><input type="text" id="cKey" placeholder="eyJ..." autocomplete="off"><span class="ayuda">Está en Project Settings, API. Los datos los protege el inicio de sesión, no esta clave.</span></div>
+      <div class="acciones"><button type="button" class="btn pri" id="cGuardar">Guardar y conectar</button></div>
+    </div>
+    <form class="bloque" id="cLogin">
+      <div class="campo"><label for="cEmail">Correo del organizador</label><input type="text" id="cEmail" inputmode="email" autocomplete="username"></div>
+      <div class="campo"><label for="cPass">Contraseña</label><input type="password" id="cPass" autocomplete="current-password"></div>
+      <div class="acciones"><button type="submit" class="btn pri">Entrar</button></div>
+    </form>
+    <div class="bloque" id="cSesion">
+      <div class="acciones" style="justify-content:flex-start"><button type="button" class="btn" id="cSalir">Cerrar sesión</button></div>
+    </div>
+    <p class="err" id="cErr" hidden></p>
+    <div class="acciones">
+      <button type="button" class="btn" id="cLocal">Usar solo este navegador</button><span class="esp"></span>
+      <button type="button" class="btn" data-cerrar>Cerrar</button>
+    </div>
+  </div>
+</dialog>
+
 <div class="toast" id="toast" role="status"></div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script src="config.js"></script>
 <script>
 const CAMPOS = ['desde','hasta','filas','titulo','valor','benef','fecha','fechaTxt','evento'];
 const CHECKS = ['numerar','vendida','continuar'];
@@ -359,13 +591,375 @@ document.querySelectorAll('[data-paso]').forEach(b => b.onclick = () => {
   const [id, paso] = b.dataset.paso.split(':'), el = $(id);
   const min = +el.min || 1, max = el.max ? +el.max : 9999;
   el.value = Math.min(max, Math.max(min, (+el.value || min) + +paso));
-  if (id === 'desde' && +$('hasta').value < +el.value) $('hasta').value = el.value;
-  render();
+  if (id === 'desde' && +$('hasta').value < +el.value) { $('hasta').value = el.value; $('hasta').dispatchEvent(new Event('input')); }
+  el.dispatchEvent(new Event('input', { bubbles: true }));
 });
 [...CAMPOS, ...CHECKS].forEach(c => $(c).addEventListener('input', render));
 $('imprimir').onclick = () => window.print();
 addEventListener('resize', escalar);
 dibujarPresets(); render();
+</script>
+<script>
+/* =====================================================================
+   REPARTO Y CONTROL
+   Datos: tabla `personas` y tabla `listas` (una fila por número de lista).
+   Se guardan en este navegador (modo local) o en Supabase si hay conexión.
+   ===================================================================== */
+const LS_DATA = 'rifa-reparto-v1', LS_CFG = 'rifa-supabase-cfg';
+const uid = () => (crypto.randomUUID ? crypto.randomUUID() : 'p' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8));
+const hoy = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; };
+const precioNum = () => { const p = parseFloat(String($('valor').value).replace(',', '.').replace(/[^0-9.]/g, '')); return isFinite(p) ? p : 0; };
+const money = n => '$' + (+n || 0).toLocaleString('es', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const nuevaLista = n => ({ numero: n, persona_id: null, fecha_entrega: null, vendidos: 0, monto: 0, devuelta: false, perdida: false, notas: '' });
+const MESES = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+const fmtFecha = f => { if (!f) return ''; const [y, m, d] = String(f).split('-').map(Number); return `${d} ${MESES[m - 1]}`; };
+
+/* ---------- Respaldo local ---------- */
+const Local = {
+  _read() { try { return JSON.parse(localStorage.getItem(LS_DATA)) || { personas: [], listas: [] }; } catch { return { personas: [], listas: [] }; } },
+  _write(d) { try { localStorage.setItem(LS_DATA, JSON.stringify(d)); } catch { aviso('No se pudo guardar en este navegador'); } },
+  async load() { return this._read(); },
+  async addPersona(p) { const d = this._read(), n = { id: uid(), nombre: p.nombre, telefono: p.telefono || '', notas: '' }; d.personas.push(n); this._write(d); return n; },
+  async updatePersona(id, patch) { const d = this._read(), x = d.personas.find(p => p.id === id); if (x) Object.assign(x, patch); this._write(d); },
+  async deletePersona(id) { const d = this._read(); d.personas = d.personas.filter(p => p.id !== id); d.listas.forEach(l => { if (l.persona_id === id) l.persona_id = null; }); this._write(d); },
+  async upsertListas(rows) {
+    const d = this._read();
+    rows.forEach(r => { const i = d.listas.findIndex(l => l.numero === r.numero); if (i >= 0) Object.assign(d.listas[i], r); else d.listas.push(Object.assign(nuevaLista(r.numero), r)); });
+    d.listas.sort((a, b) => a.numero - b.numero); this._write(d);
+  }
+};
+
+/* ---------- Respaldo Supabase ---------- */
+function crearSb(c) {
+  const ok = r => { if (r.error) throw new Error(r.error.message); return r.data; };
+  return {
+    async load() {
+      const [p, l] = await Promise.all([c.from('personas').select('*').order('nombre'), c.from('listas').select('*').order('numero')]);
+      return { personas: ok(p), listas: ok(l).map(x => ({ ...x, monto: +x.monto })) };
+    },
+    async addPersona(p) { return ok(await c.from('personas').insert({ nombre: p.nombre, telefono: p.telefono || '' }).select().single()); },
+    async updatePersona(id, patch) { ok(await c.from('personas').update(patch).eq('id', id)); },
+    async deletePersona(id) { ok(await c.from('personas').delete().eq('id', id)); },
+    async upsertListas(rows) { ok(await c.from('listas').upsert(rows, { onConflict: 'numero' })); }
+  };
+}
+
+let B = Local, modo = 'local', sbClient = null, canal = null, sesionEmail = '', errConn = '', rt;
+let R = { personas: [], listas: [] };
+const ui = { modo: 'lista', filtro: 'todas', q: '' };
+
+/* ---------- Cálculos ---------- */
+const esperado = l => (+l.vendidos || 0) * precioNum();
+const debe = l => (l.persona_id ? Math.max(0, Math.round((esperado(l) - (+l.monto || 0)) * 100) / 100) : 0);
+function estado(l) {
+  if (l.perdida) return { k: 'perdida', t: 'Perdida' };
+  if (!l.persona_id) return { k: 'libre', t: 'Sin entregar' };
+  if (l.devuelta) return debe(l) > 0 ? { k: 'debe', t: 'Devuelta, falta dinero' } : { k: 'ok', t: 'Completa' };
+  return { k: 'con', t: 'Con vendedor' };
+}
+const FILTROS = [
+  ['todas', 'Todas', () => true],
+  ['libre', 'Sin entregar', l => estado(l).k === 'libre'],
+  ['con', 'Con vendedor', l => estado(l).k === 'con'],
+  ['debe', 'Debe dinero', l => debe(l) > 0 && !l.perdida],
+  ['devuelta', 'Devueltas', l => l.devuelta && !l.perdida],
+  ['perdida', 'Perdidas', l => l.perdida]
+];
+const persona = id => R.personas.find(p => p.id === id);
+function rangos(nums) {
+  const o = []; let i = 0;
+  while (i < nums.length) { let j = i; while (j + 1 < nums.length && nums[j + 1] === nums[j] + 1) j++; o.push(j > i ? `${nums[i]}-${nums[j]}` : `${nums[i]}`); i = j + 1; }
+  return o.join(', ');
+}
+function parseNums(s) {
+  const out = new Set();
+  String(s).replace(/\s*-\s*/g, '-').split(/[,;\s]+/).filter(Boolean).forEach(t => {
+    const m = t.match(/^(\d+)(?:-(\d+))?$/); if (!m) return;
+    let a = +m[1], b = m[2] ? +m[2] : a; if (b < a) [a, b] = [b, a]; if (b - a > 500) b = a + 500;
+    for (let i = a; i <= b; i++) if (i > 0) out.add(i);
+  });
+  return [...out].sort((x, y) => x - y);
+}
+
+/* ---------- Pantallas ---------- */
+function vista(v) {
+  const rep = v === 'reparto';
+  $('vImprimir').hidden = rep; $('vReparto').hidden = !rep;
+  document.querySelectorAll('.tab').forEach(t => { if (t.dataset.vista === v) t.setAttribute('aria-current', 'page'); else t.removeAttribute('aria-current'); });
+  try { history.replaceState(null, '', rep ? '#reparto' : location.pathname + location.search); } catch {}
+  if (rep) renderReparto(); else render();
+}
+document.querySelectorAll('.tab').forEach(t => t.onclick = () => vista(t.dataset.vista));
+
+function renderReparto() {
+  const conDatos = modo === 'local' || modo === 'sb';
+  $('contenido').hidden = !conDatos;
+  $('puerta').hidden = conDatos;
+  $('avisoLocal').hidden = modo !== 'local';
+  if (!conDatos) {
+    $('puertaTit').textContent = modo === 'error' ? 'No se pudo conectar' : 'Inicia sesión para ver el reparto';
+    $('puertaTxt').textContent = modo === 'error' ? errConn : 'Este reparto está en Supabase. Entra con el correo de un organizador.';
+    $('puertaBtn').textContent = modo === 'error' ? 'Revisar conexión' : 'Iniciar sesión';
+    return;
+  }
+  const L = R.listas, filas = nFilas(), precio = precioNum();
+  const cnt = k => L.filter(l => estado(l).k === k).length;
+  const enManos = L.filter(l => l.persona_id && !l.perdida);
+  const vendidos = L.reduce((s, l) => s + (l.persona_id ? +l.vendidos || 0 : 0), 0);
+  const recibido = L.reduce((s, l) => s + (+l.monto || 0), 0);
+  const esp = L.reduce((s, l) => s + (l.persona_id ? esperado(l) : 0), 0);
+  const porCobrar = L.reduce((s, l) => s + debe(l), 0);
+  $('rsub').textContent = `${L.length} lista${L.length === 1 ? '' : 's'} registrada${L.length === 1 ? '' : 's'} · ${filas} números por lista a ${money(precio)}`;
+  const st = [
+    ['Sin entregar', cnt('libre'), 'listas disponibles', 'libre'],
+    ['Con vendedor', cnt('con'), 'aún no regresan', 'con'],
+    ['Devueltas', L.filter(l => l.devuelta && !l.perdida).length, `de ${enManos.length} entregadas`, 'ok'],
+    ['Perdidas', cnt('perdida'), 'extraviadas', cnt('perdida') ? 'perdida' : 'libre'],
+    ['Números vendidos', vendidos, `de ${enManos.length * filas} en circulación`, 'libre'],
+    ['Dinero recibido', money(recibido), `de ${money(esp)} vendidos`, 'ok'],
+    ['Por cobrar', money(porCobrar), 'vendido y sin entregar', porCobrar > 0.004 ? 'debe' : 'libre']
+  ];
+  $('stats').innerHTML = st.map(([t, v, s, k]) => `<div class="st k-${k}"><span>${t}</span><strong>${v}</strong><small>${s}</small></div>`).join('');
+
+  $('filtros').innerHTML = ui.modo === 'lista'
+    ? FILTROS.map(([k, t, f]) => `<button type="button" class="fl" data-f="${k}" aria-pressed="${ui.filtro === k}">${t}<b>${L.filter(f).length}</b></button>`).join('')
+    : '';
+  document.querySelectorAll('[data-modo]').forEach(b => b.setAttribute('aria-pressed', b.dataset.modo === ui.modo));
+  $('tbl').className = 'tbl ' + (ui.modo === 'lista' ? 'por-lista' : 'por-persona');
+  $('tbl').innerHTML = ui.modo === 'lista' ? tablaListas() : tablaPersonas();
+  $('dlPersonas').innerHTML = R.personas.map(p => `<option value="${esc(p.nombre)}"></option>`).join('');
+}
+
+function coincide(l, q) {
+  if (!q) return true;
+  const p = persona(l.persona_id), t = q.toLowerCase();
+  return String(l.numero) === t || (p && (p.nombre.toLowerCase().includes(t) || (p.telefono || '').includes(t)));
+}
+function tablaListas() {
+  const f = FILTROS.find(x => x[0] === ui.filtro)[2];
+  const rows = R.listas.filter(l => f(l) && coincide(l, ui.q.trim()));
+  if (!R.listas.length) return `<div class="vacia-t">Aún no hay listas registradas.<br>Pulsa <b>Registrar listas impresas</b> para cargar el rango de la pestaña Imprimir, o <b>Entregar listas</b> para asignarlas directamente.</div>`;
+  if (!rows.length) return `<div class="vacia-t">Ninguna lista coincide con el filtro.</div>`;
+  const head = `<div class="rw cab-t"><div>Lista</div><div>Persona</div><div>Estado</div><div>Vendidos</div><div>Dinero</div><div>Devuelta</div></div>`;
+  return head + rows.map(l => {
+    const p = persona(l.persona_id), e = estado(l), d = debe(l), filas = nFilas();
+    return `<div class="rw dato" data-n="${l.numero}" tabindex="0" role="button" aria-label="Editar lista ${l.numero}">
+      <div class="c-n">${l.numero}</div>
+      <div class="c-p">${p ? `<b>${esc(p.nombre)}</b><small>${l.fecha_entrega ? 'Entregada el ' + fmtFecha(l.fecha_entrega) : esc(p.telefono || '')}</small>` : '<span style="color:var(--muted)">—</span>'}${l.notas ? `<small>${esc(l.notas)}</small>` : ''}</div>
+      <div class="c-e"><span class="pill k-${e.k}">${e.t}</span></div>
+      <div class="c-v">${l.persona_id ? `<b>${l.vendidos}</b><small>de ${filas}</small>` : ''}</div>
+      <div class="c-d">${l.persona_id ? `<b>${money(l.monto)}</b><small>${d > 0 ? `<span class="debe-t">Debe ${money(d)}</span>` : 'de ' + money(esperado(l))}</small>` : ''}</div>
+      <div class="c-r"><button type="button" class="tg" data-dev="${l.numero}" aria-pressed="${l.devuelta}" ${l.persona_id && !l.perdida ? '' : 'disabled'}>${l.devuelta ? '✓ Devuelta' : 'Marcar'}</button></div>
+    </div>`;
+  }).join('');
+}
+function tablaPersonas() {
+  const q = ui.q.trim().toLowerCase();
+  const filas = R.personas.filter(p => !q || p.nombre.toLowerCase().includes(q) || (p.telefono || '').includes(q)).map(p => {
+    const ls = R.listas.filter(l => l.persona_id === p.id);
+    return { p, ls, vend: ls.reduce((s, l) => s + (+l.vendidos || 0), 0), rec: ls.reduce((s, l) => s + (+l.monto || 0), 0), esp: ls.reduce((s, l) => s + esperado(l), 0), deb: ls.reduce((s, l) => s + debe(l), 0), pend: ls.filter(l => !l.devuelta && !l.perdida).length, perd: ls.filter(l => l.perdida).length };
+  });
+  if (!R.personas.length) return `<div class="vacia-t">Todavía no se ha entregado ninguna lista.</div>`;
+  if (!filas.length) return `<div class="vacia-t">Nadie coincide con la búsqueda.</div>`;
+  const head = `<div class="rw cab-t"><div>Persona</div><div>Listas</div><div>Vendidos</div><div>Dinero</div><div></div></div>`;
+  return head + filas.map(({ p, ls, vend, rec, esp, deb, pend, perd }) => `<div class="rw dato" data-persona="${p.id}" tabindex="0" role="button" aria-label="Ver listas de ${esc(p.nombre)}">
+    <div><b>${esc(p.nombre)}</b><small>${esc(p.telefono || 'Sin teléfono')}</small></div>
+    <div class="c-m">${ls.length ? rangos(ls.map(l => l.numero)) : '<span style="color:var(--muted)">Sin listas</span>'}<small>${pend ? pend + ' sin devolver' : ls.length ? 'Todas devueltas' : ''}${perd ? ' · ' + perd + ' perdida' + (perd > 1 ? 's' : '') : ''}</small></div>
+    <div class="c-v"><b>${vend}</b></div>
+    <div class="c-d"><b>${money(rec)}</b><small>${deb > 0 ? `<span class="debe-t">Debe ${money(deb)}</span>` : 'de ' + money(esp)}</small></div>
+    <div><button type="button" class="tg" data-edpersona="${p.id}">Editar</button></div>
+  </div>`).join('');
+}
+
+async function refresh() {
+  try { R = await B.load(); } catch (e) { aviso('Error al cargar: ' + e.message); }
+  if (!$('vReparto').hidden) renderReparto();
+}
+async function escribir(fn, okMsg) {
+  try { await fn(); await refresh(); if (okMsg) aviso(okMsg); return true; }
+  catch (e) { aviso('No se guardó: ' + e.message); return false; }
+}
+
+/* ---------- Personas ---------- */
+async function obtenerPersona(nombre, tel) {
+  const n = nombre.trim(); if (!n) return null;
+  let p = R.personas.find(x => x.nombre.toLowerCase() === n.toLowerCase());
+  if (p) { if (tel && tel.trim() && tel.trim() !== p.telefono) await B.updatePersona(p.id, { telefono: tel.trim() }); return p; }
+  return B.addPersona({ nombre: n, telefono: (tel || '').trim() });
+}
+const mostrarErr = (id, t) => { const e = $(id); e.textContent = t; e.hidden = !t; };
+
+/* ---------- Entregar listas ---------- */
+function abrirEntregar() {
+  $('dNombre').value = ''; $('dTel').value = ''; $('dListas').value = ''; $('dFecha').value = hoy(); mostrarErr('dErr', '');
+  $('dAyuda').textContent = 'Escribe números o rangos separados por coma.';
+  const libres = R.listas.filter(l => estado(l).k === 'libre').map(l => l.numero);
+  if (libres.length) $('dAyuda').textContent = `Sin entregar: ${rangos(libres)}.`;
+  $('dlgEntregar').showModal(); $('dNombre').focus();
+}
+$('dNombre').addEventListener('input', () => { const p = R.personas.find(x => x.nombre.toLowerCase() === $('dNombre').value.trim().toLowerCase()); if (p && !$('dTel').value) $('dTel').value = p.telefono || ''; });
+$('fEntregar').onsubmit = async e => {
+  e.preventDefault();
+  const nombre = $('dNombre').value.trim(), nums = parseNums($('dListas').value);
+  if (!nombre) return mostrarErr('dErr', 'Escribe el nombre de quien recibe las listas.');
+  if (!nums.length) return mostrarErr('dErr', 'Escribe los números de lista, por ejemplo 1-10 o 4, 7, 9.');
+  const byN = new Map(R.listas.map(l => [l.numero, l]));
+  const ocupadas = nums.filter(n => { const l = byN.get(n); return l && (l.persona_id || l.perdida); });
+  if (ocupadas.length) return mostrarErr('dErr', `Ya están entregadas o perdidas: ${rangos(ocupadas)}.`);
+  const ok = await escribir(async () => {
+    const p = await obtenerPersona(nombre, $('dTel').value);
+    await B.upsertListas(nums.map(n => ({ numero: n, persona_id: p.id, fecha_entrega: $('dFecha').value || null, vendidos: 0, monto: 0, devuelta: false, perdida: false })));
+  }, `${nums.length} lista${nums.length > 1 ? 's' : ''} entregada${nums.length > 1 ? 's' : ''} a ${nombre}`);
+  if (ok) $('dlgEntregar').close();
+};
+$('dListas').addEventListener('input', () => {
+  const nums = parseNums($('dListas').value); if (!nums.length) return;
+  const byN = new Map(R.listas.map(l => [l.numero, l]));
+  const oc = nums.filter(n => { const l = byN.get(n); return l && (l.persona_id || l.perdida); });
+  $('dAyuda').textContent = `${nums.length} lista${nums.length > 1 ? 's' : ''}` + (oc.length ? ` · ya entregadas: ${rangos(oc)}` : '');
+});
+
+/* ---------- Editar una lista ---------- */
+let editando = null;
+function textoEsperado() {
+  const v = Math.max(0, +$('eVendidos').value || 0);
+  $('eEsp').textContent = `Esperado: ${money(v * precioNum())} (${v} × ${money(precioNum())})`;
+}
+function abrirEditar(n) {
+  const l = R.listas.find(x => x.numero === n); if (!l) return;
+  editando = n; const p = persona(l.persona_id);
+  $('eTit').textContent = `Lista ${n}`; $('ePersona').value = p ? p.nombre : ''; $('eFecha').value = l.fecha_entrega || '';
+  $('eVendidos').max = nFilas(); $('eVendidos').value = l.vendidos; $('eMonto').value = l.monto;
+  $('eDevuelta').checked = l.devuelta; $('ePerdida').checked = l.perdida; $('eNotas').value = l.notas || '';
+  mostrarErr('eErr', ''); resetBoton($('eLiberar')); textoEsperado(); $('dlgEditar').showModal();
+}
+function resetBoton(b) { b.dataset.seguro = ''; b.textContent = b.dataset.txt || b.textContent; }
+$('eVendidos').addEventListener('input', textoEsperado);
+$('eCobrar').onclick = () => { $('eMonto').value = (Math.max(0, +$('eVendidos').value || 0) * precioNum()).toFixed(2); };
+$('fEditar').onsubmit = async e => {
+  e.preventDefault();
+  const v = Math.max(0, Math.min(nFilas(), Math.round(+$('eVendidos').value || 0))), m = Math.max(0, +$('eMonto').value || 0);
+  const ok = await escribir(async () => {
+    const p = await obtenerPersona($('ePersona').value, '');
+    await B.upsertListas([{ numero: editando, persona_id: p ? p.id : null, fecha_entrega: $('eFecha').value || null, vendidos: v, monto: m, devuelta: $('eDevuelta').checked, perdida: $('ePerdida').checked, notas: $('eNotas').value.trim(), actualizado: new Date().toISOString() }]);
+  }, `Lista ${editando} guardada`);
+  if (ok) $('dlgEditar').close();
+};
+$('eLiberar').dataset.txt = 'Liberar lista';
+$('eLiberar').onclick = async () => {
+  const b = $('eLiberar');
+  if (!b.dataset.seguro) { b.dataset.seguro = '1'; b.textContent = 'Confirmar'; setTimeout(() => resetBoton(b), 2500); return; }
+  const ok = await escribir(() => B.upsertListas([{ numero: editando, persona_id: null, fecha_entrega: null, vendidos: 0, monto: 0, devuelta: false, perdida: false, notas: '', actualizado: new Date().toISOString() }]), `Lista ${editando} liberada`);
+  if (ok) $('dlgEditar').close();
+};
+
+/* ---------- Editar persona ---------- */
+let editPersona = null;
+function abrirPersona(id) {
+  const p = persona(id); if (!p) return; editPersona = id;
+  $('pNombre').value = p.nombre; $('pTel').value = p.telefono || ''; mostrarErr('pErr', '');
+  const b = $('pBorrar'); b.dataset.txt = 'Eliminar persona'; resetBoton(b); $('dlgPersona').showModal();
+}
+$('fPersona').onsubmit = async e => {
+  e.preventDefault();
+  const n = $('pNombre').value.trim(); if (!n) return mostrarErr('pErr', 'El nombre no puede quedar vacío.');
+  if (R.personas.some(p => p.id !== editPersona && p.nombre.toLowerCase() === n.toLowerCase())) return mostrarErr('pErr', 'Ya existe otra persona con ese nombre.');
+  const ok = await escribir(() => B.updatePersona(editPersona, { nombre: n, telefono: $('pTel').value.trim() }), 'Persona actualizada');
+  if (ok) $('dlgPersona').close();
+};
+$('pBorrar').onclick = async () => {
+  const b = $('pBorrar');
+  if (!b.dataset.seguro) { b.dataset.seguro = '1'; b.textContent = 'Confirmar: sus listas quedan sin entregar'; setTimeout(() => resetBoton(b), 3500); return; }
+  const ok = await escribir(() => B.deletePersona(editPersona), 'Persona eliminada');
+  if (ok) $('dlgPersona').close();
+};
+
+/* ---------- Acciones de la pantalla ---------- */
+$('bEntregar').onclick = abrirEntregar;
+$('bRango').onclick = async () => {
+  const d = Math.max(1, +$('desde').value || 1), h = Math.max(d, +$('hasta').value || d);
+  const ya = new Set(R.listas.map(l => l.numero)), faltan = [];
+  for (let n = d; n <= h && n < d + 500; n++) if (!ya.has(n)) faltan.push(n);
+  if (!faltan.length) return aviso(`Las listas ${d} a ${h} ya están registradas`);
+  escribir(() => B.upsertListas(faltan.map(nuevaLista)), `${faltan.length} lista${faltan.length > 1 ? 's' : ''} registrada${faltan.length > 1 ? 's' : ''} (${d} a ${h})`);
+};
+$('bCsv').onclick = () => {
+  const q = v => '"' + String(v ?? '').replace(/"/g, '""') + '"';
+  const filas = [['lista', 'persona', 'telefono', 'estado', 'fecha_entrega', 'vendidos', 'esperado', 'entregado', 'debe', 'devuelta', 'perdida', 'notas']];
+  R.listas.forEach(l => { const p = persona(l.persona_id); filas.push([l.numero, p ? p.nombre : '', p ? p.telefono : '', estado(l).t, l.fecha_entrega || '', l.vendidos, esperado(l).toFixed(2), (+l.monto).toFixed(2), debe(l).toFixed(2), l.devuelta ? 'sí' : 'no', l.perdida ? 'sí' : 'no', l.notas || '']); });
+  const blob = new Blob(['﻿' + filas.map(r => r.map(q).join(',')).join('\n')], { type: 'text/csv;charset=utf-8' });
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `reparto-rifa-${hoy()}.csv`; document.body.appendChild(a); a.click(); a.remove();
+};
+document.querySelectorAll('[data-modo]').forEach(b => b.onclick = () => { ui.modo = b.dataset.modo; renderReparto(); });
+$('filtros').addEventListener('click', e => { const f = e.target.closest('[data-f]'); if (f) { ui.filtro = f.dataset.f; renderReparto(); } });
+$('buscar').addEventListener('input', () => { ui.q = $('buscar').value; renderReparto(); });
+$('tbl').addEventListener('click', async e => {
+  const dev = e.target.closest('[data-dev]'), ep = e.target.closest('[data-edpersona]'), fila = e.target.closest('.dato');
+  if (dev) { e.stopPropagation(); const l = R.listas.find(x => x.numero === +dev.dataset.dev); if (l) escribir(() => B.upsertListas([{ numero: l.numero, devuelta: !l.devuelta, actualizado: new Date().toISOString() }]), l.devuelta ? `Lista ${l.numero} marcada como no devuelta` : `Lista ${l.numero} devuelta`); return; }
+  if (ep) { abrirPersona(ep.dataset.edpersona); return; }
+  if (fila && fila.dataset.n) abrirEditar(+fila.dataset.n);
+  else if (fila && fila.dataset.persona) { const p = persona(fila.dataset.persona); ui.modo = 'lista'; ui.filtro = 'todas'; ui.q = p.nombre; $('buscar').value = p.nombre; renderReparto(); }
+});
+$('tbl').addEventListener('keydown', e => { if ((e.key === 'Enter' || e.key === ' ') && e.target.classList.contains('dato')) { e.preventDefault(); e.target.click(); } });
+document.querySelectorAll('[data-cerrar]').forEach(b => b.onclick = () => b.closest('dialog').close());
+document.querySelectorAll('dialog').forEach(d => d.addEventListener('click', e => { if (e.target === d) d.close(); }));
+['valor', 'filas'].forEach(c => $(c).addEventListener('input', () => { if (!$('vReparto').hidden) renderReparto(); }));
+
+/* ---------- Conexión con Supabase ---------- */
+function leerCfg() {
+  try { const s = JSON.parse(localStorage.getItem(LS_CFG)); if (s && s.url && s.anonKey) return s; } catch {}
+  const w = window.RIFA_CONFIG; return w && w.url && w.anonKey ? w : null;
+}
+function pintarConexion() {
+  const c = $('conn'); c.classList.toggle('sb', modo === 'sb'); c.classList.toggle('err', modo === 'error');
+  $('connTxt').textContent = { local: 'Solo este navegador', sb: 'En línea · ' + sesionEmail, login: 'Sin sesión', error: 'Sin conexión' }[modo];
+}
+async function arrancar() {
+  if (canal && sbClient) { try { sbClient.removeChannel(canal); } catch {} canal = null; }
+  B = Local; modo = 'local'; errConn = ''; sesionEmail = '';
+  const c = leerCfg();
+  if (c) {
+    if (!window.supabase) { modo = 'error'; errConn = 'No se pudo cargar la librería de Supabase. Revisa tu conexión a internet.'; }
+    else {
+      try {
+        sbClient = window.supabase.createClient(c.url, c.anonKey);
+        const { data, error } = await sbClient.auth.getSession(); if (error) throw error;
+        if (data.session) {
+          B = crearSb(sbClient); modo = 'sb'; sesionEmail = data.session.user.email || 'organizador';
+          canal = sbClient.channel('rifa').on('postgres_changes', { event: '*', schema: 'public' }, () => { clearTimeout(rt); rt = setTimeout(refresh, 300); }).subscribe();
+        } else modo = 'login';
+      } catch (e) { modo = 'error'; errConn = 'La configuración de Supabase no es válida: ' + e.message; }
+    }
+  }
+  pintarConexion();
+  if (modo === 'local' || modo === 'sb') await refresh(); else { R = { personas: [], listas: [] }; if (!$('vReparto').hidden) renderReparto(); }
+}
+function abrirConn() {
+  const c = leerCfg();
+  $('cUrl').value = c ? c.url : ''; $('cKey').value = c ? c.anonKey : ''; mostrarErr('cErr', modo === 'error' ? errConn : '');
+  $('cCfg').hidden = modo === 'sb'; $('cLogin').hidden = modo !== 'login'; $('cSesion').hidden = modo !== 'sb';
+  $('cLocal').hidden = !c;
+  $('cEstado').textContent = { local: 'Los datos se guardan solo en este navegador. Para compartirlos con otros organizadores, conecta un proyecto de Supabase (ver README).', sb: `Conectado como ${sesionEmail}. Los cambios se comparten en tiempo real.`, login: 'Proyecto configurado. Inicia sesión con tu correo de organizador.', error: 'No se pudo conectar con Supabase.' }[modo];
+  $('dlgConn').showModal();
+}
+$('conn').onclick = abrirConn; $('avisoBtn').onclick = abrirConn; $('puertaBtn').onclick = abrirConn;
+$('cGuardar').onclick = async () => {
+  const url = $('cUrl').value.trim().replace(/\/+$/, ''), key = $('cKey').value.trim();
+  if (!/^https:\/\/.+\..+/.test(url) || key.length < 20) return mostrarErr('cErr', 'Escribe la URL del proyecto (https://...supabase.co) y la clave anon completa.');
+  try { localStorage.setItem(LS_CFG, JSON.stringify({ url, anonKey: key })); } catch { return mostrarErr('cErr', 'Este navegador no permite guardar la configuración.'); }
+  await arrancar(); $('dlgConn').close(); abrirConn();
+};
+$('cLogin').onsubmit = async e => {
+  e.preventDefault(); mostrarErr('cErr', '');
+  const { error } = await sbClient.auth.signInWithPassword({ email: $('cEmail').value.trim(), password: $('cPass').value });
+  if (error) return mostrarErr('cErr', error.message === 'Invalid login credentials' ? 'Correo o contraseña incorrectos.' : error.message);
+  $('cPass').value = ''; await arrancar(); $('dlgConn').close(); aviso('Sesión iniciada');
+};
+$('cSalir').onclick = async () => { await sbClient.auth.signOut(); await arrancar(); $('dlgConn').close(); aviso('Sesión cerrada'); };
+$('cLocal').onclick = async () => { try { localStorage.removeItem(LS_CFG); } catch {} await arrancar(); $('dlgConn').close(); aviso('Usando datos locales'); };
+
+addEventListener('hashchange', () => vista(location.hash === '#reparto' ? 'reparto' : 'imprimir'));
+arrancar().then(() => { if (location.hash === '#reparto') vista('reparto'); });
 </script>
 </body>
 </html>
